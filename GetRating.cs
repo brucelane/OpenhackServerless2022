@@ -15,20 +15,21 @@ namespace Company.Function
         }
 
         [Function("GetRating")]
-        public HttpResponseData Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
+        public HttpResponseData Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "rating/{id}")] HttpRequestData req,
+        [CosmosDBInput("%CosmosDb%", 
+            "%CosmosCollOut%", 
+            ConnectionStringSetting = "CosmosConnection",
+            SqlQuery = "select * from %CosmosCollOut% r where r.id = {id}")] IEnumerable<RatingItem> ratingItems)
         {
-            var q = System.Web.HttpUtility.ParseQueryString(req.Url.Query);
-            var ratingId = q["ratingId"] ?? "0";
-
-            _logger.LogInformation($"C# HTTP trigger function processed a request.{ratingId}");
+            if (ratingItems == null || ratingItems.ToList().Count == 0) {
+                var notFoundResponse = req.CreateResponse(HttpStatusCode.NotFound);
+                return notFoundResponse;
+            }
 
             var response = req.CreateResponse(HttpStatusCode.OK);
-
-            response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
-
-            response.WriteString($"The rating for id {ratingId} is 42");
-
+            response.WriteAsJsonAsync(ratingItems.FirstOrDefault());
             return response;
         }
+        
     }
 }
