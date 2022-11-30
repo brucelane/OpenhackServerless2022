@@ -2,18 +2,18 @@ namespace Company.Function {
     public class RatingItem
         {
             
-            public string Id { get; set; }
+            public string id { get; set; }
 
-            public string UserId { get; set; }
+            public string userId { get; set; }
 
-            public string ProductId { get; set; }
+            public string productId { get; set; }
 
-            public string LocationName { get; set; }
+            public string locationName { get; set; }
 
-            public int Rating { get; set; }
+            public int rating { get; set; }
 
-            public string UserNotes { get; set; }
+            public string userNotes { get; set; }
 
-            public DateTime Timestamp { get; set; }
+            public DateTime timestamp { get; set; }
         }
 }
