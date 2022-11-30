@@ -1,7 +1,7 @@
 # Openhack serverless
 
 dotnet 7 isolated
-functions
+azure functions
 cosmosdb
 c#
-azure
+
