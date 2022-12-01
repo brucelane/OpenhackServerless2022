@@ -1,0 +1,163 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workflows_laoh_name": {
+            "defaultValue": "laoh",
+            "type": "String"
+        },
+        "connections_office365_6_externalid": {
+            "defaultValue": "/subscriptions/41aa2681-f55f-4834-9cc6-e6dc671b4ae5/resourceGroups/rgbruce/providers/Microsoft.Web/connections/office365-6",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('workflows_laoh_name')]",
+            "location": "westeurope",
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "manual": {
+                            "type": "Request",
+                            "kind": "Http",
+                            "inputs": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "actions": {
+                        "CRM": {
+                            "runAfter": {
+                                "Email": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "Recipients",
+                                        "type": "array",
+                                        "value": [
+                                            "b.lane@"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "Create_HTML_table": {
+                            "runAfter": {
+                                "HTTP": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Table",
+                            "inputs": {
+                                "columns": [
+                                    {
+                                        "header": "IceCream",
+                                        "value": "@item()['productName']"
+                                    },
+                                    {
+                                        "header": "Description",
+                                        "value": "@item()['productDescription']"
+                                    },
+                                    {
+                                        "header": "ProductId",
+                                        "value": "@item()['productId']"
+                                    }
+                                ],
+                                "format": "HTML",
+                                "from": "@body('HTTP')"
+                            }
+                        },
+                        "Email": {
+                            "runAfter": {
+                                "Create_HTML_table": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "haut",
+                                        "type": "string",
+                                        "value": "<!DOCTYPE html>\n<html>\n<body style=\"background-color: whitesmoke; color: #454545; font-family:'Gill Sans',\n 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; padding-bottom: 3em;\">\n  <table style=\"width:100%; color:#454545\">\n    <tr>\n      <td style=\"width:11em;\">\n        <img style=\"margin-left:1em;\"\n        src=\"https://serverlessoh.azureedge.net/public/ice-cream-2202561_320-circle.jpg\"\n          height=\"160\" width=\"160\" alt=\"Fruit Ice Cream\">\n      </td>\n      <td>\n        <p style=\"font-style: italic; font-size: 50px;\n        font-weight:600; margin-left: 1em;\">Best For You Organics</p>\n      </td>\n    </tr>\n  </table>\n  <p style=\"text-align: center; font-style: italic; font-size:\n  80px;\">New Ice Cream Line!</p>\n  <p style=\"margin:2em 0em; font-size: 20px; text-align: center;\">\n  Best For You Organics have a new line of fruit flavored ice creams.\n  Below is the information so you can start the ordering process:\n  </p>\n  <table style=\"width:100%; border-top: 1px solid #454545;\n  border-bottom: 1px solid #454545; color:#454545; padding: 1em; font-size: 20px;\">\n    <thead>\n      <tr>\n        <th style=\"padding-bottom: 1em;\" align=\"left\">Ice Cream</th>\n        <th style=\"padding-bottom: 1em;\" align=\"left\">Description</th>\n        <th style=\"padding-bottom: 1em;\" align=\"left\">Product ID</th>\n      </tr>\n    </thead>\n    <tbody style=\"font-size: 16px;\">@{body('Create_HTML_table')}\n </tbody>\n  </table>\n  <p style=\"text-align: center; margin-top: 3em;font-size: 20px;\">Please contact\n  your representative at Best For You Organics to get more information..</p>\n</body>\n</html>"
+                                    }
+                                ]
+                            }
+                        },
+                        "For_each": {
+                            "foreach": "@variables('Recipients')",
+                            "actions": {
+                                "Send_an_email_(V2)_2": {
+                                    "runAfter": {},
+                                    "type": "ApiConnection",
+                                    "inputs": {
+                                        "body": {
+                                            "Body": "<p>@{variables('haut')}</p>",
+                                            "Cc": "julien@",
+                                            "Importance": "Normal",
+                                            "Subject": "Team 1",
+                                            "To": "@{items('For_each')}"
+                                        },
+                                        "host": {
+                                            "connection": {
+                                                "name": "@parameters('$connections')['office365_1']['connectionId']"
+                                            }
+                                        },
+                                        "method": "post",
+                                        "path": "/v2/Mail"
+                                    }
+                                }
+                            },
+                            "runAfter": {
+                                "CRM": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Foreach"
+                        },
+                        "HTTP": {
+                            "runAfter": {},
+                            "type": "Http",
+                            "inputs": {
+                                "headers": {
+                                    "Ocp-Apim-Subscription-Key": "beada4dab5f14f4fb29cf99ef68cd828"
+                                },
+                                "method": "GET",
+                                "uri": "https://blapim.azure-api.net/products/GetProducts"
+                            }
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "office365_1": {
+                                "connectionId": "[parameters('connections_office365_6_externalid')]",
+                                "connectionName": "office365-6",
+                                "id": "/subscriptions/41aa2681-f55f-4834-9cc6-e6dc671b4ae5/providers/Microsoft.Web/locations/westeurope/managedApis/office365"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
