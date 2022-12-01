@@ -1,0 +1,147 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workflows_BlobCreationBatchSender2_name": {
+            "defaultValue": "BlobCreationBatchSender2",
+            "type": "String"
+        },
+        "workflows_BlobCreationBatchReceiver_externalid": {
+            "defaultValue": "/subscriptions/41aa2681-f55f-4834-9cc6-e6dc671b4ae5/resourceGroups/icecreamrating-py/providers/Microsoft.Logic/workflows/BlobCreationBatchReceiver",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('workflows_BlobCreationBatchSender2_name')]",
+            "location": "eastus",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "triggers": {
+                        "manual": {
+                            "type": "Request",
+                            "kind": "Http",
+                            "inputs": {
+                                "schema": {
+                                    "items": {
+                                        "properties": {
+                                            "data": {
+                                                "properties": {
+                                                    "api": {
+                                                        "type": "string"
+                                                    },
+                                                    "blobType": {
+                                                        "type": "string"
+                                                    },
+                                                    "clientRequestId": {
+                                                        "type": "string"
+                                                    },
+                                                    "contentLength": {
+                                                        "type": "integer"
+                                                    },
+                                                    "contentType": {
+                                                        "type": "string"
+                                                    },
+                                                    "eTag": {
+                                                        "type": "string"
+                                                    },
+                                                    "requestId": {
+                                                        "type": "string"
+                                                    },
+                                                    "sequencer": {
+                                                        "type": "string"
+                                                    },
+                                                    "storageDiagnostics": {
+                                                        "properties": {
+                                                            "batchId": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    },
+                                                    "url": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "dataVersion": {
+                                                "type": "string"
+                                            },
+                                            "eventTime": {
+                                                "type": "string"
+                                            },
+                                            "eventType": {
+                                                "type": "string"
+                                            },
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "metadataVersion": {
+                                                "type": "string"
+                                            },
+                                            "subject": {
+                                                "type": "string"
+                                            },
+                                            "topic": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "topic",
+                                            "subject",
+                                            "eventType",
+                                            "id",
+                                            "data",
+                                            "dataVersion",
+                                            "metadataVersion",
+                                            "eventTime"
+                                        ],
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        }
+                    },
+                    "actions": {
+                        "Sender": {
+                            "foreach": "@triggerBody()",
+                            "actions": {
+                                "BlobCreationBatchReceiver_2": {
+                                    "runAfter": {},
+                                    "type": "SendToBatch",
+                                    "inputs": {
+                                        "batchName": "BatchOrdersReceived",
+                                        "content": "@items('Sender')?['data']?['url']",
+                                        "host": {
+                                            "triggerName": "Batch_messages",
+                                            "workflow": {
+                                                "id": "[parameters('workflows_BlobCreationBatchReceiver_externalid')]"
+                                            }
+                                        },
+                                        "partitionName": "@{last(split(first(split(items('Sender')?['data']?['url'], '-')), '/'))}"
+                                    }
+                                }
+                            },
+                            "runAfter": {},
+                            "type": "Foreach"
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {}
+            }
+        }
+    ]
+}
