@@ -49,7 +49,7 @@
                 "capacity": 1
             },
             "properties": {
-                "publisherEmail": "b.lane@agglo-casa.fr",
+                "publisherEmail": "b.lane@",
                 "publisherName": "MyCompany",
                 "notificationSenderEmail": "apimgmt-noreply@mail.windowsazure.com",
                 "hostnameConfigurations": [
@@ -1166,12 +1166,12 @@
             ],
             "properties": {
                 "firstName": "Administrator",
-                "email": "b.lane@agglo-casa.fr",
+                "email": "b.lane@",
                 "state": "active",
                 "identities": [
                     {
                         "provider": "Azure",
-                        "id": "b.lane@agglo-casa.fr"
+                        "id": "b.lane@"
                     }
                 ],
                 "lastName": "[parameters('users_1_lastName')]"
@@ -1187,12 +1187,12 @@
             "properties": {
                 "firstName": "Julien",
                 "lastName": "strebler",
-                "email": "justrebl@microsoft.com",
+                "email": "ju@",
                 "state": "active",
                 "identities": [
                     {
                         "provider": "Basic",
-                        "id": "justrebl@microsoft.com"
+                        "id": "ju@"
                     }
                 ]
             }
@@ -1207,12 +1207,12 @@
             "properties": {
                 "firstName": "Iheb",
                 "lastName": "Khemissi",
-                "email": "iheb.khemissi@gmail.com",
+                "email": "iheb@",
                 "state": "active",
                 "identities": [
                     {
                         "provider": "Basic",
-                        "id": "iheb.khemissi@gmail.com"
+                        "id": "iheb@"
                     }
                 ]
             }

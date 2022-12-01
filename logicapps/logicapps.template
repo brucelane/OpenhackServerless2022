@@ -110,7 +110,7 @@
                                     "inputs": {
                                         "body": {
                                             "Body": "<p>@{variables('haut')}</p>",
-                                            "Cc": "julien@",
+                                            "Cc": "cc@",
                                             "Importance": "Normal",
                                             "Subject": "Team 1",
                                             "To": "@{items('For_each')}"
